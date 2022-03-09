@@ -49,6 +49,7 @@
     }, 
     "outputs": {
         "dge_results": {
+            "required": true,
             "spec": {
                 "attribute_type": "DataResource", 
                 "resource_type": "FT",
@@ -56,6 +57,7 @@
             }
         },
         "normalized_counts": {
+            "required": true,
             "spec": {
                 "attribute_type": "DataResource", 
                 "resource_type": "EXP_MTX",
