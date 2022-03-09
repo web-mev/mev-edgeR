@@ -7,7 +7,7 @@
             "name": "Count matrix:", 
             "required": true, 
             "spec": {
-                "attribute_type": "DataResource", 
+                "attribute_type": "VariableDataResource", 
                 "resource_types": ["I_MTX", "RNASEQ_COUNT_MTX"], 
                 "many": false
             }
@@ -49,6 +49,7 @@
     }, 
     "outputs": {
         "dge_results": {
+            "required": true,
             "spec": {
                 "attribute_type": "DataResource", 
                 "resource_type": "FT",
@@ -56,6 +57,7 @@
             }
         },
         "normalized_counts": {
+            "required": true,
             "spec": {
                 "attribute_type": "DataResource", 
                 "resource_type": "EXP_MTX",
