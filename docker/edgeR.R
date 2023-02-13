@@ -27,6 +27,15 @@ base_samples <- make.names(orig_base_samples)
 orig_exp_samples <- strsplit(EXPERIMENTAL_CONDITION_SAMPLES, ',')[[1]]
 exp_samples <- make.names(orig_exp_samples)
 
+if(
+    (length(orig_base_samples) < 2)
+    ||
+    (length(exp_samples) < 2)
+){
+    message('One or both of your sample sets contained fewer than 2 samples. To perform differential expression analysis, replicates are required.')
+    quit(status=1)
+}
+
 intersection_list = intersect(base_samples, exp_samples)
 
 if (length(intersection_list) > 0){
@@ -61,6 +70,15 @@ count_data <- read.table(RAW_COUNT_MATRIX, sep='\t', header = T, row.names = 1, 
 # file has more samples than the count matrix:
 count_mtx_cols = colnames(count_data)
 annotations <- annotations[annotations$sample %in% count_mtx_cols,]
+
+# Check that after subsetting samples, we actually have more than one 'condition' represented.
+# This also covers the edge case where only a single sample name was valid. In that case, the 
+# column subset below produces an array and `dim(count_data)[2]` throws an error.
+fl <- length(levels(as.factor(annotations$condition)))
+if(fl < 2){
+    message(sprintf('After subsetting the matrix for the samples of interest (%d found), only one cohort of samples was present. Please double-check your inputs or sample names.',  dim(annotations)[1]))
+    quit(status=1)
+}
 
 # subset to only keep samples corresponding to the current groups in the count_data dataframe
 # Also sorts the columns to match the ordering of the annotation dataframe
