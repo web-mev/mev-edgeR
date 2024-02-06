@@ -20,7 +20,7 @@ Either:
 
 To run, change into the directory containing your count matrix you wish to run differential expression on. Then:
 ```
-docker run -it -v $PWD:/work <IMAGE> Rscript /opt/software/edgeR.R \
+docker run -it -v $PWD:/work <IMAGE> Rscript /usr/local/bin/edgeR.R \
     /work/<path to raw/integer counts> \
     <base/control condition samples as CSV-string> \
     <experimental condition samples as CSV-string> \
