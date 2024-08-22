@@ -3,8 +3,8 @@ suppressMessages(suppressWarnings(library("edgeR", character.only=T, warn.confli
 # args from command line:
 args<-commandArgs(TRUE)
 RAW_COUNT_MATRIX<-args[1]
-BASE_CONDITION_SAMPLES <- args[2]
-EXPERIMENTAL_CONDITION_SAMPLES <- args[3]
+ANN_FILE<-args[2]
+ORIG_ANN_COL<-args[3]
 CONDITION_A<-args[4]
 CONDITION_B<-args[5]
 OUTPUT_FILE_BASE <- 'edgeR_results'
@@ -15,24 +15,42 @@ working_dir <- dirname(RAW_COUNT_MATRIX)
 setwd(working_dir)
 
 # convert names in case they are not "proper" for R
-CONDITION_A <- make.names(CONDITION_A)
-CONDITION_B <- make.names(CONDITION_B)
+ANN_COL <- make.names(ORIG_ANN_COL)
 
 # create a string to identify the contrast:
-contrast_str = paste0(CONDITION_B, '_vs_', CONDITION_A)
+contrast_str = paste0(ANN_COL, '_', CONDITION_B, '_vs_', CONDITION_A)
 
-# the sample names are given as a comma-delimited string. Split them
-orig_base_samples = strsplit(BASE_CONDITION_SAMPLES, ',')[[1]]
+# read the annotation file:
+annotations <- read.table(ANN_FILE, sep='\t', header = T, row.names = 1)
+
+if (!(ANN_COL %in% colnames(annotations))) {
+    message(sprintf('The column "%s" was not found in your annotation file. Please check your inputs. Note that this input is case-sensitive and must match exactly.', ORIG_ANN_COL))
+    quit(status=1)
+}
+
+# filter to only those samples which match the conditions
+base_samples_filter <- annotations[, ANN_COL] == CONDITION_A
+exp_samples_filter <- annotations[, ANN_COL] == CONDITION_B
+orig_base_samples <- rownames(annotations)[base_samples_filter]
+orig_exp_samples <- rownames(annotations)[exp_samples_filter]
 base_samples <- make.names(orig_base_samples)
-orig_exp_samples <- strsplit(EXPERIMENTAL_CONDITION_SAMPLES, ',')[[1]]
 exp_samples <- make.names(orig_exp_samples)
 
 if(
-    (length(orig_base_samples) < 2)
+    (length(base_samples) == 0)
+    ||
+    (length(exp_samples) == 0)
+){
+    message(sprintf('One or both of your sample sets contained zero samples. Check that both %s and %s are valid values in column "%s".', CONDITION_A, CONDITION_B, ORIG_ANN_COL))
+    quit(status=1)
+}
+
+if(
+    (length(base_samples) < 2)
     ||
     (length(exp_samples) < 2)
 ){
-    message('One or both of your sample sets contained fewer than 2 samples. To perform differential expression analysis, replicates are required.')
+    message(sprintf('One or both of your sample sets contained fewer than 2 samples. To perform differential expression analysis, replicates are required. Check that both conditions %s and %s have 2 or more samples each.', CONDITION_A, CONDITION_B))
     quit(status=1)
 }
 
